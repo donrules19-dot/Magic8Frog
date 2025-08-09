@@ -1,0 +1,20 @@
+{
+  "name": "Magic 8 Frog",
+  "short_name": "Magic8Frog",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#dff9e1",
+  "theme_color": "#7fd97f",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
