@@ -1,0 +1,595 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Frogtastic Fortune Teller</title>
+    <style>
+        body {
+            background: linear-gradient(#b3f7f0, #f0fff8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            text-align: center;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            user-select: none;
+            position: relative;
+        }
+
+        .lily-pad {
+            position: absolute;
+            background-color: #55a630;
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: float 20s infinite ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            z-index: 0;
+        }
+
+        .lily-pad.small { width: 80px; height: 80px; }
+        .lily-pad.medium { width: 120px; height: 120px; }
+        .lily-pad.large { width: 160px; height: 160px; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        .frog-container {
+            position: relative;
+            width: 280px;
+            max-width: 90vw;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        svg {
+            width: 100%;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #tongue {
+            transform-origin: top center;
+            transition: transform 0.4s ease-out, height 0.25s ease;
+            height: 0;
+            rx: 5;
+            fill: #ff6b81;
+        }
+
+        .blink {
+            animation: blink 4s infinite;
+            transform-origin: center;
+        }
+
+        @keyframes blink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            92%, 98% { transform: scaleY(0.1); }
+        }
+
+        #message {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            color: #ff2e63;
+            background: rgba(255,255,255,0.9);
+            padding: 6px 10px;
+            border-radius: 10px;
+            max-width: 80%;
+            box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+            text-shadow: none;
+            opacity: 0;
+            pointer-events: none;
+            font-size: 1.1em;
+            white-space: nowrap;
+            user-select: none;
+            word-spacing: 1em;
+            letter-spacing: 0.1em;
+            -webkit-font-smoothing: antialiased;
+            transition: opacity 0.3s ease-out;
+        }
+
+        .bouncy-letter {
+            display: inline-block;
+            animation: bounceIn 0.3s forwards;
+            transform-origin: bottom center;
+        }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: translateY(10px) scale(0.8); }
+            60% { opacity: 1; transform: translateY(-5px) scale(1.1); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .input-container {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 350px;
+            z-index: 1;
+        }
+
+        #questionInput {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            border-radius: 15px;
+            border: 2px solid #2f3542;
+            box-shadow: 1px 2px 5px rgba(0,0,0,0.2);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        #askBtn {
+            width: 100%;
+            font-size: 1.6em;
+            padding: 20px 35px;
+            background-color: #7bed9f;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 2px 4px #2f3542;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            overflow: visible;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            animation: pulse 2s infinite ease-in-out;
+        }
+        
+        #askBtn:active { transform: scale(0.95); }
+        #askBtn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            box-shadow: 1px 2px #999;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .ripple-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 46, 99, 0.3);
+            transform: scale(0);
+            animation: ripple-effect 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple-effect {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        @keyframes hop {
+            0% { transform: translateY(0); }
+            30% { transform: translateY(-15px); }
+            50% { transform: translateY(0); }
+            70% { transform: translateY(-7px); }
+            100% { transform: translateY(0); }
+        }
+
+        .hop { animation: hop 0.6s ease; }
+
+        .fly {
+            position: absolute;
+            width: 25px;
+            height: 20px;
+            background: radial-gradient(circle at 12px 10px, black 8px, #222 15px);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            box-shadow: inset 0 -2px 3px rgba(255,255,255,0.2);
+            user-select: none;
+            pointer-events: none;
+            animation: wingFlap 0.6s ease-in-out infinite alternate;
+        }
+
+        .fly::before, .fly::after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            width: 12px;
+            height: 7px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 60% 40% 60% 40% / 70% 80% 20% 30%;
+            transform-origin: center;
+            filter: drop-shadow(0 0 1px rgba(0,0,0,0.2));
+            pointer-events: none;
+        }
+
+        .fly::before {
+            left: -8px;
+            transform: rotate(20deg);
+            animation: wingFlapLeft 0.6s ease-in-out infinite alternate;
+        }
+
+        .fly::after {
+            right: -8px;
+            transform: rotate(-20deg);
+            animation: wingFlapRight 0.6s ease-in-out infinite alternate;
+        }
+        
+        .fly-leg {
+            position: absolute;
+            width: 2px;
+            height: 7px;
+            background: black;
+            border-radius: 1px;
+            top: 14px;
+            filter: drop-shadow(0 0 0.5px rgba(0,0,0,0.6));
+            pointer-events: none;
+            transform-origin: top center;
+            animation: legMove 0.7s ease-in-out infinite alternate;
+        }
+
+        .fly-leg:nth-child(1) { left: 6px; animation-delay: 0s; }
+        .fly-leg:nth-child(2) { left: 11px; animation-delay: 0.3s; }
+        @keyframes wingFlap { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(-1px) rotate(2deg); } }
+        @keyframes wingFlapLeft { 0% { transform: rotate(20deg) translateY(0); } 100% { transform: rotate(10deg) translateY(-1.5px); } }
+        @keyframes wingFlapRight { 0% { transform: rotate(-20deg) translateY(0); } 100% { transform: rotate(-10deg) translateY(-1.5px); } }
+        @keyframes legMove { 0% { transform: rotate(10deg); } 100% { transform: rotate(-10deg); } }
+
+        .questions-asked-count {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 0.8em;
+            color: #2f3542;
+            opacity: 0.6;
+            z-index: 1;
+        }
+        
+        @media (max-width: 400px) {
+            .frog-container { width: 220px; }
+            #message { font-size: 1em; max-width: 90%; }
+            #askBtn { font-size: 1.3em; padding: 15px 25px; }
+            #questionInput { font-size: 1em; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lily-pad small" style="top: 10%; left: 5%;"></div>
+    <div class="lily-pad medium" style="top: 25%; right: 15%;"></div>
+    <div class="lily-pad large" style="bottom: 15%; left: 20%;"></div>
+    <div class="lily-pad small" style="bottom: 30%; right: 5%;"></div>
+
+    <div class="frog-container ripple-container" id="frogContainer" aria-label="Frog fortune teller" role="img" tabindex="0">
+        <svg id="frog" viewBox="0 0 200 200" aria-label="Frog fortune teller">
+            <ellipse id="frogBody" cx="100" cy="120" rx="80" ry="60" fill="#7bed9f" stroke="#2f3542" stroke-width="4"></ellipse>
+            <circle cx="60" cy="130" r="12" fill="#ffcccc"></circle>
+            <circle cx="140" cy="130" r="12" fill="#ffcccc"></circle>
+            <circle cx="65" cy="60" r="20" fill="#7bed9f" stroke="#2f3542" stroke-width="3"></circle>
+            <circle cx="135" cy="60" r="20" fill="#7bed9f" stroke="#2f3542" stroke-width="3"></circle>
+            <circle cx="65" cy="60" r="12" fill="#fff" class="blink"></circle>
+            <circle cx="135" cy="60" r="12" fill="#fff" class="blink"></circle>
+            <circle id="pupilLeft" cx="62.38" cy="63" r="5" fill="#2f3542"></circle>
+            <circle id="pupilRight" cx="132.38" cy="63" r="5" fill="#2f3542"></circle>
+            <path d="M 70 140 Q 100 160 130 140" stroke="#2f3542" stroke-width="4" fill="transparent"></path>
+            <rect id="tongue" x="95" y="140" width="10" height="0" fill="#ff6b81" rx="5"></rect>
+        </svg>
+        <div id="message" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <div class="input-container">
+        <input type="text" id="questionInput" placeholder="Ask a question..." aria-label="Type your question">
+        <button id="askBtn" class="ripple-container" aria-label="Ask the Magic 8FROG">Ask the Magic 8FROG</button>
+    </div>
+
+    <div class="questions-asked-count" id="questionsAskedCount">Questions answered: 0</div>
+
+    <audio id="ribbitSound" src="https://actions.google.com/sounds/v1/animals/frog_croak.ogg" preload="auto"></audio>
+
+    <script>
+        const answers = {
+            'yes': [
+                "It is certain.", "Without a doubt.", "Yes – definitely.", "You may rely on it.", "As I see it, yes.",
+                "Most likely.", "Outlook good.", "Yes.", "Signs point to yes.", "Frog approves.", "The pond whispers yes.",
+                "A tadpole would say so.", "Hop on it!", "A fly told me yes."
+            ],
+            'no': [
+                "Don't count on it.", "My reply is no.", "Outlook not so good.", "Very doubtful.", "Chances aren’t great.",
+                "Ribbit says nope.", "The lily pad says no.", "Definitely not after lunch."
+            ],
+            'maybe': [
+                "Reply hazy, try again.", "Ask again later.", "Better not tell you now.", "Cannot predict now.",
+                "Concentrate and ask again.", "Maybe, maybe not.", "Ask me later, I’m busy ribbiting."
+            ],
+            'funny': [
+                "Your socks know the truth.", "Ask a potato.", "Your fortune is... slimy.", "Only if you dance first.",
+                "Hop twice and try again.", "Don’t lick any toads about it.", "I’ll allow it."
+            ]
+        };
+
+        const frog = document.getElementById('frog');
+        const frogContainer = document.getElementById('frogContainer');
+        const frogBody = document.getElementById('frogBody');
+        const tongue = document.getElementById('tongue');
+        const message = document.getElementById('message');
+        const ribbitSound = document.getElementById('ribbitSound');
+        const pupilLeft = document.getElementById('pupilLeft');
+        const pupilRight = document.getElementById('pupilRight');
+        const askBtn = document.getElementById('askBtn');
+        const questionInput = document.getElementById('questionInput');
+        const questionsAskedCount = document.getElementById('questionsAskedCount');
+
+        let idleTimer;
+        let flies = [];
+        let fliesAnimationFrame;
+        let fliesData = [];
+        let isAnimating = false;
+        let questionsAnswered = parseInt(localStorage.getItem('questionsAnswered')) || 0;
+        
+        const frogColors = [
+            "#7bed9f", "#9ae3ff", "#f5b971", "#ff7f7f", "#b3f7f0",
+            "#c6f7e2", "#e3c6f7", "#f7d6c6", "#ffb3d9", "#9f9fff"
+        ];
+        
+        // Load persistent state
+        function loadState() {
+            const lastColor = localStorage.getItem('frogColor');
+            if (lastColor) {
+                frogBody.setAttribute('fill', lastColor);
+                const eyeColor = `#${(parseInt(lastColor.substring(1), 16) + 0x333333).toString(16).padStart(6, '0')}`;
+                document.querySelectorAll('#frog > circle:nth-child(5), #frog > circle:nth-child(6)').forEach(el => el.setAttribute('fill', lastColor));
+            }
+            questionsAskedCount.textContent = `Questions answered: ${questionsAnswered}`;
+        }
+        
+        function saveState() {
+            localStorage.setItem('frogColor', frogBody.getAttribute('fill'));
+            localStorage.setItem('questionsAnswered', questionsAnswered);
+        }
+
+        function movePupils(x, y) {
+            const frogRect = frog.getBoundingClientRect();
+            const centerX = frogRect.left + frogRect.width / 2;
+            const centerY = frogRect.top + frogRect.height / 3;
+            const maxMove = 3;
+
+            const pupilX = Math.max(Math.min((x - centerX) / 50, maxMove), -maxMove);
+            const pupilY = Math.max(Math.min((y - centerY) / 50, maxMove), -maxMove);
+
+            pupilLeft.setAttribute('cx', 65 + pupilX);
+            pupilLeft.setAttribute('cy', 60 + pupilY);
+            pupilRight.setAttribute('cx', 135 + pupilX);
+            pupilRight.setAttribute('cy', 60 + pupilY);
+        }
+
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            removeFlies();
+            idleTimer = setTimeout(spawnFlies, 10000);
+        }
+
+        function spawnFlies() {
+            const container = frogContainer;
+            const flyCount = Math.floor(Math.random() * 3) + 1;
+
+            for (let i = 0; i < flyCount; i++) {
+                const fly = document.createElement('div');
+                fly.classList.add('fly');
+
+                fly.style.left = `${Math.random() * (container.clientWidth - 25)}px`;
+                fly.style.top = `${Math.random() * (container.clientHeight - 20)}px`;
+
+                for (let j = 0; j < 2; j++) {
+                    const leg = document.createElement('div');
+                    leg.classList.add('fly-leg');
+                    fly.appendChild(leg);
+                }
+
+                container.appendChild(fly);
+                flies.push(fly);
+
+                fliesData.push({
+                    element: fly,
+                    x: parseFloat(fly.style.left),
+                    y: parseFloat(fly.style.top),
+                    vx: (Math.random() - 0.5) * 0.8,
+                    vy: (Math.random() - 0.5) * 0.8,
+                    angle: 0,
+                    angleV: (Math.random() - 0.5) * 0.1
+                });
+            }
+            animateFlies();
+        }
+
+        function animateFlies() {
+            if (flies.length === 0) return;
+
+            const container = frogContainer;
+            const now = Date.now();
+            fliesData.forEach(flyData => {
+                // Dynamic, wandering movement
+                flyData.vx += (Math.random() - 0.5) * 0.2;
+                flyData.vy += (Math.random() - 0.5) * 0.2;
+
+                flyData.vx = Math.max(Math.min(flyData.vx, 1.5), -1.5);
+                flyData.vy = Math.max(Math.min(flyData.vy, 1.5), -1.5);
+
+                flyData.x += flyData.vx;
+                flyData.y += flyData.vy;
+
+                // Bounce off walls
+                if (flyData.x <= 0 || flyData.x >= container.clientWidth - 25) flyData.vx *= -1;
+                if (flyData.y <= 0 || flyData.y >= container.clientHeight - 20) flyData.vy *= -1;
+
+                flyData.element.style.left = `${flyData.x}px`;
+                flyData.element.style.top = `${flyData.y}px`;
+                flyData.element.style.transform = `rotate(${flyData.angle}deg)`;
+            });
+
+            fliesAnimationFrame = requestAnimationFrame(animateFlies);
+        }
+
+        function removeFlies() {
+            flies.forEach(fly => fly.remove());
+            flies = [];
+            fliesData = [];
+            if (fliesAnimationFrame) {
+                cancelAnimationFrame(fliesAnimationFrame);
+                fliesAnimationFrame = null;
+            }
+        }
+
+        function createRipple(event, container) {
+            const rect = container.getBoundingClientRect();
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+
+            let x, y;
+            if (event.touches && event.touches.length > 0) {
+                x = event.touches[0].clientX - rect.left;
+                y = event.touches[0].clientY - rect.top;
+            } else {
+                x = event.clientX - rect.left;
+                y = event.clientY - rect.top;
+            }
+
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+
+            container.appendChild(ripple);
+
+            ripple.addEventListener('animationend', () => {
+                ripple.remove();
+            });
+        }
+
+        function showMessageBouncy(text) {
+            message.innerHTML = '';
+            message.style.opacity = 1;
+            for (let i = 0; i < text.length; i++) {
+                const span = document.createElement('span');
+                span.textContent = text[i];
+                span.classList.add('bouncy-letter');
+                span.style.animationDelay = `${i * 40}ms`;
+                message.appendChild(span);
+            }
+        }
+
+        function hopFrog() {
+            frogContainer.classList.add('hop');
+            setTimeout(() => {
+                frogContainer.classList.remove('hop');
+            }, 600);
+        }
+
+        function getRandomAnswer() {
+            const allAnswers = [...answers.yes, ...answers.no, ...answers.maybe, ...answers.funny];
+            const randomIndex = Math.floor(Math.random() * allAnswers.length);
+            return allAnswers[randomIndex];
+        }
+
+        function askFrog(event) {
+            if (isAnimating) return;
+            isAnimating = true;
+            askBtn.disabled = true;
+
+            if (event) {
+                if (event.target.classList.contains('ripple-container')) {
+                    createRipple(event, event.target);
+                }
+            }
+
+            ribbitSound.currentTime = 0;
+            ribbitSound.play();
+
+            // Display question first
+            const userQuestion = questionInput.value.trim();
+            if (userQuestion.length > 0) {
+                showMessageBouncy(userQuestion);
+            } else {
+                showMessageBouncy("...");
+            }
+
+            // Change frog color randomly
+            let newColor;
+            do {
+                newColor = frogColors[Math.floor(Math.random() * frogColors.length)];
+            } while (newColor === frogBody.getAttribute('fill'));
+            frogBody.setAttribute('fill', newColor);
+            document.querySelectorAll('#frog > circle:nth-child(5), #frog > circle:nth-child(6)').forEach(el => el.setAttribute('fill', newColor));
+            
+            saveState();
+
+            // Tongue out
+            tongue.setAttribute('height', 60);
+            tongue.style.transform = 'scaleY(1.2)';
+
+            // Hop animation
+            hopFrog();
+
+            setTimeout(() => {
+                const randomAnswer = getRandomAnswer();
+                message.style.opacity = 0;
+                tongue.setAttribute('height', 0);
+                tongue.style.transform = 'scaleY(1)';
+
+                setTimeout(() => {
+                    showMessageBouncy(randomAnswer);
+                    questionsAnswered++;
+                    questionsAskedCount.textContent = `Questions answered: ${questionsAnswered}`;
+                    saveState();
+                    isAnimating = false;
+                    askBtn.disabled = false;
+                    questionInput.value = '';
+                }, 400);
+
+            }, 2000);
+
+            resetIdleTimer();
+        }
+
+        // Event listeners
+        frog.addEventListener('click', askFrog);
+        askBtn.addEventListener('click', askFrog);
+        document.addEventListener('keydown', e => {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                e.preventDefault();
+                askFrog(e);
+            }
+        });
+
+        document.addEventListener('mousemove', e => movePupils(e.clientX, e.clientY));
+        document.addEventListener('touchmove', e => {
+            if (e.touches.length > 0) movePupils(e.touches[0].clientX, e.touches[0].clientY);
+        });
+
+        document.addEventListener('click', resetIdleTimer);
+        document.addEventListener('touchstart', resetIdleTimer);
+        questionInput.addEventListener('focus', () => {
+             // Stop button pulse animation when typing
+            askBtn.style.animation = 'none';
+        });
+        questionInput.addEventListener('blur', () => {
+             // Restart pulse animation when done typing
+            askBtn.style.animation = 'pulse 2s infinite ease-in-out';
+        });
+
+        loadState();
+        resetIdleTimer();
+    </script>
+</body>
+</html>
